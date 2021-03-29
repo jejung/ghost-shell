@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
+
 #include "ghostsh.h"
 #include "CuTest.h"
 
@@ -17,7 +18,7 @@ void gstsh_options_free(gstsh_options_t* options)
     free(options);
 }
 
-void gstsh_parse_options(gstsh_options_t* opt, int argc, char** argv)
+void gstsh_parse_options(gstsh_options_t* opt, int argc, char *argv[])
 {
     static struct option long_options[] = {
         {"self-check", no_argument, 0, 0},
@@ -44,6 +45,12 @@ void gstsh_parse_options(gstsh_options_t* opt, int argc, char** argv)
                 break;
         }
     }
+
+    opt->prompt = getenv("PS1");
+    if (opt->prompt == NULL)
+    {
+        opt->prompt = "\xF0\x9F\x91\xBB";
+    }
 }
 
 void TestAcceptanceParseOptions(CuTest* tc)
@@ -59,6 +66,12 @@ void TestAcceptanceParseOptions(CuTest* tc)
 
     CuAssert(tc,"self-check flag is set", opts->flags & GSTSH_OPT_SELFCHECK);
     CuAssert(tc,"verbose debug flag is set", opts->flags & GSTSH_OPT_DEBUG);
+    CuAssertIntEquals_Msg(tc, "prompt is set to default", 0, strcmp("\xF0\x9F\x91\xBB", opts->prompt));
+
+    char env[] = "PS1=WHY";
+    putenv(env);
+    gstsh_parse_options(opts, argc, &argv[0]);
+    CuAssertIntEquals_Msg(tc, "prompt is set to PS1", 0, strcmp("WHY", opts->prompt));
 
     gstsh_options_free(opts);
 }

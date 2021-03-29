@@ -3,7 +3,7 @@ WARNINGS :=	-Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 					-Wno-long-long -Wuninitialized
 
 CC=gcc
-CFLAGS=-c -std=c17 -O3
+CFLAGS=-c -std=gnu17 -O3
 LDFLAGS=
 PROJDIRS=src/
 BINBASEDIR=build
@@ -47,5 +47,8 @@ make-tests:
 
 test:
 	@$(TARGET) --self-check
+
+install:
+	cp $(TARGET) /usr/bin/ghost-sh
 
 -include $(DEPFILES)

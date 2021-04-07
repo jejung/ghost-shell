@@ -3,8 +3,8 @@ WARNINGS :=	-Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 					-Wno-long-long -Wuninitialized
 
 CC=gcc
-CFLAGS=-c -std=gnu17 -O3
-LDFLAGS=
+override CFLAGS=-c -std=gnu17
+override LDFLAGS=
 PROJDIRS=src/
 BINBASEDIR=build
 BINDIRS=$(patsubst %,$(BINBASEDIR)/%,$(PROJDIRS))
@@ -15,7 +15,7 @@ DEPFILES=$(patsubst %.c,$(BINBASEDIR)/%.d,$(SRCFILES))
 ALLFILES=$(SRCFILES) $(HDRFILES)
 TARGET=$(BINBASEDIR)/ghost-sh
 
-.PHONY: all clean dist check todolist test make-tests
+.PHONY: all clean todolist make-tests test install
 
 all: $(TARGET) test
 

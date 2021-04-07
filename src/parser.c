@@ -8,27 +8,37 @@
 
 void gstsh_parse_line(char* buf, gstsh_command_line_t* cmd)
 {
-    char* token = strtok(buf, " \t");
-    gstsh_command_line_set_info(cmd, GSTSH_CMD_INFO_SUCCESS);
+    char* end_pipes;
+    char* pipes = strtok_r(buf, "|", &end_pipes);
 
-    if (token == NULL)
-    {
-        gstsh_command_line_set_info(cmd, GSTSH_CMD_INFO_BLANK);
-        return;
+    while (pipes != NULL) {
+        char* end_token;
+        char* token = strtok_r(pipes, " \t", &end_token);
+
+        gstsh_charp_list_t* argv = gstsh_charp_list_new();
+        gstsh_charp_list_t* node = argv;
+
+        int argc = 0;
+        while (token != NULL) {
+            node->data = token;
+            node->next = gstsh_charp_list_new();
+            node = node->next;
+            argc++;
+            token = strtok_r(NULL, " \t", &end_token);
+        }
+
+        gstsh_command_line_set_argv(cmd, argc, argv);
+        gstsh_charp_list_free(argv);
+
+        pipes = strtok_r(NULL, "|", &end_pipes);
+        if (pipes == NULL)
+        {
+            break;
+        }
+
+        cmd->pipe_to = gstsh_command_line_new();
+        cmd = cmd->pipe_to;
     }
-
-    gstsh_charp_list_t* argv = gstsh_charp_list_new();
-    gstsh_charp_list_t* node = argv;
-    int argc = 0;
-    do {
-        node->data = token;
-        node->next = gstsh_charp_list_new();
-        argc++;
-        node = node->next;
-    } while ((token = strtok(NULL, " \t")) != NULL);
-
-    gstsh_command_line_set_argv(cmd, argc, argv);
-    gstsh_charp_list_free(argv);
 }
 
 
@@ -39,20 +49,17 @@ void TestAcceptanceParseShouldIdentifyProgram(CuTest* tc)
 
     strcpy(buf, "");
     gstsh_parse_line(buf, cmd);
-    CuAssert(tc, "Check blank string is set as success", gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_SUCCESS));
-    CuAssert(tc, "Check blank string is set as blank", gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_BLANK));
+    CuAssert(tc, "Check blank string is set as blank", cmd->argc == 0);
     gstsh_command_line_clear(cmd);
 
     strcpy(buf, " \t");
     gstsh_parse_line(buf, cmd);
-    CuAssert(tc, "Check whitespace string is set as success", gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_SUCCESS));
-    CuAssert(tc, "Check whitespace string is set as blank", gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_BLANK));
+    CuAssert(tc, "Check whitespace string is set as blank", cmd->argc == 0);
     gstsh_command_line_clear(cmd);
 
     strcpy(buf, "ls");
     gstsh_parse_line(buf, cmd);
-    CuAssert(tc, "Check single-program string is set as success", gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_SUCCESS));
-    CuAssert(tc, "Check single-program string is set as not blank", gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_BLANK) == 0);
+    CuAssert(tc, "Check single-program string is set as not blank", cmd->argc > 0);
     CuAssertStrEquals_Msg(tc, "Check single-program program is recognized", "ls", cmd->argv[0]);
     gstsh_command_line_clear(cmd);
 
@@ -64,10 +71,39 @@ void TestAcceptanceParseShouldIdentifyProgram(CuTest* tc)
     strcpy(buf, "program first-arg second-arg");
     gstsh_parse_line(buf, cmd);
     CuAssertIntEquals_Msg(tc, "Check argc is correctly set", 3, cmd->argc);
-    CuAssertStrEquals_Msg(tc, "Check program name  is correctly set", "program", cmd->argv[0]);
+    CuAssertStrEquals_Msg(tc, "Check program name is correctly set", "program", cmd->argv[0]);
     CuAssertStrEquals_Msg(tc, "Check first arg is correctly set", "first-arg", cmd->argv[1]);
     CuAssertStrEquals_Msg(tc, "Check second arg is correctly set", "second-arg", cmd->argv[2]);
     gstsh_command_line_clear(cmd);
 
     gstsh_command_line_free(cmd);
+    free(buf);
+}
+
+void TestAcceptancePipesShouldCreateCmdLineTree(CuTest* tc)
+{
+    char *buf = malloc(sizeof(char) * 500);
+    gstsh_command_line_t *cmd = gstsh_command_line_new();
+
+    strcpy(buf, "program1 | program2");
+    gstsh_parse_line(buf, cmd);
+    CuAssertPtrNotNullMsg(tc, "Check leaf exists", cmd->pipe_to);
+    CuAssertStrEquals_Msg(tc, "Check program name is correctly set to root", "program1", cmd->argv[0]);
+    CuAssertStrEquals_Msg(tc, "Check program name is correctly set to leaf", "program2", cmd->pipe_to->argv[0]);
+    gstsh_command_line_clear(cmd);
+
+    strcpy(buf, "program1 arg1| program2 arg2 --opt2");
+    gstsh_parse_line(buf, cmd);
+    CuAssertPtrNotNullMsg(tc, "Check leaf exists", cmd->pipe_to);
+    CuAssertIntEquals_Msg(tc, "Check argc is correctly set to root", 2, cmd->argc);
+    CuAssertStrEquals_Msg(tc, "Check program name is correctly set to root", "program1", cmd->argv[0]);
+    CuAssertStrEquals_Msg(tc, "Check arguments are correctly set to root", "arg1", cmd->argv[1]);
+    CuAssertIntEquals_Msg(tc, "Check argc is correctly set to leaf", 3, cmd->pipe_to->argc);
+    CuAssertStrEquals_Msg(tc, "Check program name is correctly set to leaf", "program2", cmd->pipe_to->argv[0]);
+    CuAssertStrEquals_Msg(tc, "Check arguments are correctly set to leaf", "arg2", cmd->pipe_to->argv[1]);
+    CuAssertStrEquals_Msg(tc, "Check arguments are correctly set to leaf", "--opt2", cmd->pipe_to->argv[2]);
+    gstsh_command_line_clear(cmd);
+
+    gstsh_command_line_free(cmd);
+    free(buf);
 }

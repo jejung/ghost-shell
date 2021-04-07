@@ -80,6 +80,5 @@ void gstsh_print_usage_exit(void)
 {
     printf("Usage: ghost-shell [OPTIONS]\n");
     printf("\t--self-check\tPerforms a self-check to guarantee it is safely working and then exit\n");
-    printf("\t--verbose\tPrints additional information\n");
     exit(0);
 }

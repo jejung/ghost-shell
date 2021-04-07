@@ -28,14 +28,7 @@ int _gstsh_run_for_fds(gstsh_options_t* opt, FILE* in, FILE* out)
 
         gstsh_parse_line(line, cmd);
 
-        if (gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_SUCCESS) == 0)
-        {
-            gstsh_command_line_clear(cmd);
-            fprintf(out, "Invalid command: %s\n", line);
-            continue;
-        }
-
-        if (gstsh_command_line_check_info(cmd, GSTSH_CMD_INFO_BLANK))
+        if (cmd->argc == 0)
         {
             gstsh_command_line_clear(cmd);
             continue;
@@ -94,7 +87,7 @@ void TestAcceptanceShRunCorrectly(CuTest* tc)
     rewind(mockin);
     rewind(mockout);
     _gstsh_run_for_fds(opt, mockin, mockout);
-    CuAssertFileContents_Msg(tc, "Check empty line produces one prompt and then exits", "| baaa\n| ", mockout);
+    CuAssertFileContents_Msg(tc, "Check is able to execute child program", "| baaa\n| ", mockout);
 
     gstsh_options_free(opt);
 

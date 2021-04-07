@@ -5,19 +5,30 @@
 gstsh_command_line_t* gstsh_command_line_new(void)
 {
     gstsh_command_line_t* cmd = malloc(sizeof(gstsh_command_line_t));
-    gstsh_command_line_clear(cmd);
+    cmd->argc = 0;
+    cmd->argv = NULL;
+    cmd->pipe_to = NULL;
     return cmd;
 }
 
 void gstsh_command_line_clear(gstsh_command_line_t* cmd)
 {
-    cmd->info_flags = 0;
     cmd->argc = 0;
-    cmd->argv = NULL;
+    if (cmd->argv != NULL)
+    {
+        free(cmd->argv);
+        cmd->argv = NULL;
+    }
+    if (cmd->pipe_to != NULL)
+    {
+        gstsh_command_line_free(cmd->pipe_to);
+        cmd->pipe_to = NULL;
+    }
 }
 
 void gstsh_command_line_free(gstsh_command_line_t* cmd)
 {
+    gstsh_command_line_clear(cmd);
     free(cmd);
 }
 

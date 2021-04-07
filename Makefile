@@ -3,7 +3,7 @@ WARNINGS :=	-Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 					-Wno-long-long -Wuninitialized
 
 CC=gcc
-override CFLAGS=-c -std=gnu17
+override CFLAGS=-c -std=gnu17 -MMD -MP
 override LDFLAGS=
 PROJDIRS=src/
 BINBASEDIR=build
@@ -26,8 +26,9 @@ $(TARGET): make-tests $(BINDIRS) $(OBJFILES)
 	@echo "make test to check it"
 	@echo "make install to install it"
 
+
 $(BINBASEDIR)/%.o: %.c Makefile
-	$(CC) $(CFLAGS) $(WARNINGS) -MMD -MP $< -o $@
+	$(CC) $(CFLAGS) $(WARNINGS) $< -o $@
 
 $(BINDIRS):
 	@mkdir -p -v $(BINDIRS)
@@ -39,11 +40,11 @@ clean:
 	-rm -rvf $(BINBASEDIR)
 
 print:
-	@echo "SRCFILES=$(SRCFILES)" && echo "OBJFILES=$(OBJFILES)"
+	@echo $(ALLFILES)
 
 make-tests:
 	@echo "Generating test files"
-	./make-tests > ./src/AllTests.c
+	./make-tests > $(PROJDIRS)/AllTests.c
 
 test:
 	@$(TARGET) --self-check

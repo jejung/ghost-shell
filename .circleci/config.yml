@@ -1,7 +1,14 @@
 version: 2.1
-orbs:
-  welcome: circleci/welcome-orb@0.4.1
+
 workflows:
-  welcome:
+  ci:
     jobs:
-      - welcome/run
+      - selfcheck
+
+jobs:
+  selfcheck:
+    docker:
+      - image: gcc
+    steps:
+      - checkout
+      - run: make

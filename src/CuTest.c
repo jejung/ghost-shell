@@ -369,3 +369,20 @@ void CuSuiteDetails(CuSuite* testSuite, CuString* details)
         CuStringAppendFormat(details, "Fails: %d\n",  testSuite->failCount);
     }
 }
+
+
+void CuSuiteExportJunitXml(CuSuite* suite, CuString* to)
+{
+    CuStringAppendFormat(to, "<testsuite tests=\"%d\">", suite->count);
+    for (int i = 0; i < suite->count; ++i)
+    {
+        CuTest* tc = suite->list[i];
+        CuStringAppendFormat(to, "<testcase name=\"%s\">", tc->name);
+        if (tc->failed)
+        {
+            CuStringAppendFormat(to, "<failure message=\"%s\" type=\"FailedAssertion\" />", tc->message);
+        }
+        CuStringAppend(to, "</testcase>");
+    }
+    CuStringAppend(to, "</testsuite>");
+}

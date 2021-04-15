@@ -12,3 +12,7 @@ jobs:
     steps:
       - checkout
       - run: make
+      - run: mkdir -p test-results/junit/
+      - run: build/ghost-sh --self-check --junit-xml test-results/junit/results.xml
+      - store_test_results:
+          path: test-results

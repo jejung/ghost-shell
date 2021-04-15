@@ -16,6 +16,7 @@
 typedef struct {
     unsigned int flags;
     const char *prompt;
+    char *selfcheck_export_path;
     char *envp[];
 } gs_options_t;
 
@@ -23,7 +24,7 @@ gs_options_t* gs_options_new();
 void gs_options_free(gs_options_t*);
 void gs_parse_options(gs_options_t* opt, int argc, char *argv[]);
 void gs_print_usage_exit(void);
-void gs_run_selfcheck(void);
+void gs_run_selfcheck(gs_options_t* opt);
 
 int gs_run_interactively(gs_options_t* opt);
 

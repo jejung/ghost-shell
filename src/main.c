@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
     if (gs_check_opt(options, GS_OPT_SELFCHECK))
     {
-        gs_run_selfcheck();
+        gs_run_selfcheck(options);
     }
 
     int result_code = gs_run_interactively(options);

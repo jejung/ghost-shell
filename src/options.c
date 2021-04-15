@@ -10,6 +10,8 @@ gs_options_t* gs_options_new(void)
 {
     gs_options_t* options = malloc(sizeof(gs_options_t));
     options->flags = 0;
+    options->prompt = NULL;
+    options->selfcheck_export_path = NULL;
     return options;
 }
 
@@ -23,12 +25,14 @@ void gs_parse_options(gs_options_t* opt, int argc, char *argv[])
     static struct option long_options[] = {
         {"self-check", no_argument, 0, 0},
         {"verbose", no_argument, 0, 0},
+        {"junit-xml", required_argument, 0, 'j'},
         {0, 0, 0, 0}
     };
 
     static int options_flags[] = {
         GS_OPT_SELFCHECK,
         GS_OPT_DEBUG,
+        0,
     };
 
     int option_index = 0;
@@ -37,6 +41,9 @@ void gs_parse_options(gs_options_t* opt, int argc, char *argv[])
     {
         switch (c)
         {
+            case 'j':
+                opt->selfcheck_export_path = optarg;
+                break;
             case 0:
                 opt->flags |= options_flags[option_index];
                 break;
@@ -55,17 +62,22 @@ void gs_parse_options(gs_options_t* opt, int argc, char *argv[])
 
 void TestAcceptanceParseOptions(CuTest* tc)
 {
+    unsetenv("PS1");
+
     gs_options_t* opts = gs_options_new();
     char arg0[] = "program";
     char arg1[] = "--self-check";
     char arg2[] = "--verbose";
-    char* argv[] = { &arg0[0], &arg1[0], &arg2[0], NULL };
+    char arg3[] = "--junit-xml";
+    char arg4[] = "path/to/store/xml.xml";
+    char* argv[] = { &arg0[0], &arg1[0], &arg2[0], &arg3[0], &arg4[0], NULL };
     int argc = (int)(sizeof(argv) / sizeof(argv[0])) - 1;
     optind = 1;
     gs_parse_options(opts, argc, &argv[0]);
 
     CuAssert(tc,"self-check flag is set", opts->flags & GS_OPT_SELFCHECK);
     CuAssert(tc,"verbose debug flag is set", opts->flags & GS_OPT_DEBUG);
+    CuAssertStrEquals_Msg(tc,"junit export path is set", "path/to/store/xml.xml", opts->selfcheck_export_path);
     CuAssertIntEquals_Msg(tc, "prompt is set to default", 0, strcmp("\xF0\x9F\x91\xBB", opts->prompt));
 
     char env[] = "PS1=WHY";

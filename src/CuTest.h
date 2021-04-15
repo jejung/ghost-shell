@@ -7,7 +7,7 @@
 
 #define CUTEST_VERSION  "CuTest 1.5"
 
-int RunAllTests(void);
+int RunAllTests(char* exportJunitFormat);
 
 /* CuString */
 
@@ -121,5 +121,6 @@ void CuSuiteAddSuite(CuSuite* testSuite, CuSuite* testSuite2);
 void CuSuiteRun(CuSuite* testSuite);
 void CuSuiteSummary(CuSuite* testSuite, CuString* summary);
 void CuSuiteDetails(CuSuite* testSuite, CuString* details);
+void CuSuiteExportJunitXml(CuSuite* suite, CuString* to);
 
 #endif /* CU_TEST_H */

@@ -10,7 +10,7 @@ extern void TestAcceptanceParseShouldIdentifyProgram(CuTest*);
 extern void TestAcceptancePipesShouldCreateCmdLineTree(CuTest*);
 extern void TestAcceptanceShRunCorrectly(CuTest*);
 
-int RunAllTests(void)
+int RunAllTests(char* exportJunitFormat)
 {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
@@ -23,6 +23,15 @@ int RunAllTests(void)
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);
     CuSuiteDetails(suite, output);
+    if (exportJunitFormat != NULL)
+    {
+      CuString *export = CuStringNew();
+      CuSuiteExportJunitXml(suite, export);
+      FILE *fp = fopen(exportJunitFormat, "w+");
+      fwrite(export->buffer, export->length, 1, fp);
+      fclose(fp);
+      CuStringDelete(export);
+    }
 
     int failures = suite->failCount;
     printf("%s\n", output->buffer);

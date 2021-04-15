@@ -17,7 +17,7 @@ TARGET=$(BINBASEDIR)/ghost-sh
 
 .PHONY: all clean todolist make-tests test install
 
-all: $(TARGET) test
+all: $(TARGET)
 
 $(TARGET): make-tests $(BINDIRS) $(OBJFILES)
 	$(CC) $(LDFLAGS) $(OBJFILES) -o $(TARGET)
@@ -46,7 +46,7 @@ make-tests:
 	@echo "Generating test files"
 	./make-tests > $(PROJDIRS)/AllTests.c
 
-test:
+test: $(TARGET)
 	@$(TARGET) --self-check
 
 install:

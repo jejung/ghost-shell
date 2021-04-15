@@ -6,19 +6,19 @@
 #include "ghostsh.h"
 #include "CuTest.h"
 
-gstsh_options_t* gstsh_options_new(void)
+gs_options_t* gs_options_new(void)
 {
-    gstsh_options_t* options = malloc(sizeof(gstsh_options_t));
+    gs_options_t* options = malloc(sizeof(gs_options_t));
     options->flags = 0;
     return options;
 }
 
-void gstsh_options_free(gstsh_options_t* options)
+void gs_options_free(gs_options_t* options)
 {
     free(options);
 }
 
-void gstsh_parse_options(gstsh_options_t* opt, int argc, char *argv[])
+void gs_parse_options(gs_options_t* opt, int argc, char *argv[])
 {
     static struct option long_options[] = {
         {"self-check", no_argument, 0, 0},
@@ -27,8 +27,8 @@ void gstsh_parse_options(gstsh_options_t* opt, int argc, char *argv[])
     };
 
     static int options_flags[] = {
-        GSTSH_OPT_SELFCHECK,
-        GSTSH_OPT_DEBUG,
+        GS_OPT_SELFCHECK,
+        GS_OPT_DEBUG,
     };
 
     int option_index = 0;
@@ -41,7 +41,7 @@ void gstsh_parse_options(gstsh_options_t* opt, int argc, char *argv[])
                 opt->flags |= options_flags[option_index];
                 break;
             case '?':
-                gstsh_print_usage_exit();
+                gs_print_usage_exit();
                 break;
         }
     }
@@ -55,28 +55,28 @@ void gstsh_parse_options(gstsh_options_t* opt, int argc, char *argv[])
 
 void TestAcceptanceParseOptions(CuTest* tc)
 {
-    gstsh_options_t* opts = gstsh_options_new();
+    gs_options_t* opts = gs_options_new();
     char arg0[] = "program";
     char arg1[] = "--self-check";
     char arg2[] = "--verbose";
     char* argv[] = { &arg0[0], &arg1[0], &arg2[0], NULL };
     int argc = (int)(sizeof(argv) / sizeof(argv[0])) - 1;
     optind = 1;
-    gstsh_parse_options(opts, argc, &argv[0]);
+    gs_parse_options(opts, argc, &argv[0]);
 
-    CuAssert(tc,"self-check flag is set", opts->flags & GSTSH_OPT_SELFCHECK);
-    CuAssert(tc,"verbose debug flag is set", opts->flags & GSTSH_OPT_DEBUG);
+    CuAssert(tc,"self-check flag is set", opts->flags & GS_OPT_SELFCHECK);
+    CuAssert(tc,"verbose debug flag is set", opts->flags & GS_OPT_DEBUG);
     CuAssertIntEquals_Msg(tc, "prompt is set to default", 0, strcmp("\xF0\x9F\x91\xBB", opts->prompt));
 
     char env[] = "PS1=WHY";
     putenv(env);
-    gstsh_parse_options(opts, argc, &argv[0]);
+    gs_parse_options(opts, argc, &argv[0]);
     CuAssertIntEquals_Msg(tc, "prompt is set to PS1", 0, strcmp("WHY", opts->prompt));
 
-    gstsh_options_free(opts);
+    gs_options_free(opts);
 }
 
-void gstsh_print_usage_exit(void)
+void gs_print_usage_exit(void)
 {
     printf("Usage: ghost-shell [OPTIONS]\n");
     printf("\t--self-check\tPerforms a self-check to guarantee it is safely working and then exit\n");

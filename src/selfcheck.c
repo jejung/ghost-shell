@@ -3,7 +3,7 @@
 #include "ghostsh.h"
 #include "CuTest.h"
 
-void gstsh_run_selfcheck(void)
+void gs_run_selfcheck(void)
 {
     printf("Self-check in progress\n");
 

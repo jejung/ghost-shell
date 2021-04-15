@@ -10,11 +10,11 @@
 #include "ghostshparser.h"
 #include "CuTest.h"
 
-int _gstsh_run_for_fds(gstsh_options_t* opt, FILE* in, FILE* out)
+int _gs_run_for_fds(gs_options_t* opt, FILE* in, FILE* out)
 {
     char line[4096];
 
-    gstsh_command_line_t* cmd = gstsh_command_line_new();
+    gs_command_line_t* cmd = gs_command_line_new();
 
     while (1)
     {
@@ -26,11 +26,11 @@ int _gstsh_run_for_fds(gstsh_options_t* opt, FILE* in, FILE* out)
         }
         line[strlen(line) - 1] = '\0';
 
-        gstsh_parse_line(line, cmd);
+        gs_parse_line(line, cmd);
 
         if (cmd->argc == 0)
         {
-            gstsh_command_line_clear(cmd);
+            gs_command_line_clear(cmd);
             continue;
         }
 
@@ -54,24 +54,24 @@ int _gstsh_run_for_fds(gstsh_options_t* opt, FILE* in, FILE* out)
             fprintf(out, "Could not start process: %d\n", pid);
         }
 
-        gstsh_command_line_clear(cmd);
+        gs_command_line_clear(cmd);
     }
 
-    gstsh_command_line_free(cmd);
+    gs_command_line_free(cmd);
 
     return 0;
 }
 
 
-int gstsh_run_interactively(gstsh_options_t* opt)
+int gs_run_interactively(gs_options_t* opt)
 {
-    return _gstsh_run_for_fds(opt, stdin, stdout);
+    return _gs_run_for_fds(opt, stdin, stdout);
 }
 
 
 void TestAcceptanceShRunCorrectly(CuTest* tc)
 {
-    gstsh_options_t* opt = gstsh_options_new();
+    gs_options_t* opt = gs_options_new();
     opt->prompt = "|";
 
     FILE* mockin = tmpfile();
@@ -79,17 +79,17 @@ void TestAcceptanceShRunCorrectly(CuTest* tc)
 
     fputs("\n", mockin);
     rewind(mockin);
-    _gstsh_run_for_fds(opt, mockin, mockout);
+    _gs_run_for_fds(opt, mockin, mockout);
     CuAssertFileContents_Msg(tc, "Check empty line produces one prompt and then exits", "| | ", mockout);
 
     rewind(mockin);
     fputs("echo baaa\n", mockin);
     rewind(mockin);
     rewind(mockout);
-    _gstsh_run_for_fds(opt, mockin, mockout);
+    _gs_run_for_fds(opt, mockin, mockout);
     CuAssertFileContents_Msg(tc, "Check is able to execute child program", "| baaa\n| ", mockout);
 
-    gstsh_options_free(opt);
+    gs_options_free(opt);
 
     fclose(mockin);
     fclose(mockout);

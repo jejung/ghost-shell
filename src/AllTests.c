@@ -9,6 +9,7 @@ extern void TestAcceptanceParseOptions(CuTest*);
 extern void TestAcceptanceParseShouldIdentifyProgram(CuTest*);
 extern void TestAcceptancePipesShouldCreateCmdLineTree(CuTest*);
 extern void TestAcceptanceShRunCorrectly(CuTest*);
+extern void TestPipeSupport(CuTest*);
 
 int RunAllTests(char* exportJunitFormat)
 {
@@ -19,6 +20,7 @@ int RunAllTests(char* exportJunitFormat)
     SUITE_ADD_TEST(suite, TestAcceptanceParseShouldIdentifyProgram);
     SUITE_ADD_TEST(suite, TestAcceptancePipesShouldCreateCmdLineTree);
     SUITE_ADD_TEST(suite, TestAcceptanceShRunCorrectly);
+    SUITE_ADD_TEST(suite, TestPipeSupport);
 
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);

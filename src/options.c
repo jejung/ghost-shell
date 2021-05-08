@@ -33,6 +33,7 @@ void gs_parse_options(gs_options_t* opt, int argc, char *argv[])
         GS_OPT_SELFCHECK,
         GS_OPT_DEBUG,
         0,
+        0,
     };
 
     int option_index = 0;
@@ -91,6 +92,8 @@ void TestAcceptanceParseOptions(CuTest* tc)
 void gs_print_usage_exit(void)
 {
     printf("Usage: ghost-shell [OPTIONS]\n");
-    printf("\t--self-check\tPerforms a self-check to guarantee it is safely working and then exit\n");
+    printf("\t%-30s%s\n", "--self-check", "Performs a self-check to guarantee it is safely working and then exit");
+    printf("\t%-30s%s\n", "--junit-xml FILE", "Write check results to specified FILE in JUnit XML format - depends on --self-check");
+    printf("\t%-30s%s\n", "--verbose", "Write debug log to stdout");
     exit(0);
 }

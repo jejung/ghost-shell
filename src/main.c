@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
     }
 
     int result_code = gs_run_interactively(options);
-
     gs_options_free(options);
 
     return result_code;

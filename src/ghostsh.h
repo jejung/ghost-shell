@@ -53,7 +53,7 @@ void gs_command_line_clear(gs_command_line_t* cmd);
 void gs_command_line_set_argv(gs_command_line_t* cmd, int argc, gs_charp_list_t* argv);
 
 
-#define GS_MAX_RUNNING_PIDS 50
+#define GS_MAX_RUNNING_PIDS 25
 
 typedef struct gs_context {
     unsigned int n_running_pids;

@@ -16,13 +16,11 @@ void gs_parse_line(char* buf, gs_command_line_t* cmd)
         char* token = strtok_r(pipes, " \t", &end_token);
 
         gs_charp_list_t* argv = gs_charp_list_new();
-        gs_charp_list_t* node = argv;
+        gs_charp_list_t* argvtail = argv;
 
         int argc = 0;
         while (token != NULL) {
-            node->data = token;
-            node->next = gs_charp_list_new();
-            node = node->next;
+            argvtail = gs_charp_list_append(argvtail, token);
             argc++;
             token = strtok_r(NULL, " \t", &end_token);
         }

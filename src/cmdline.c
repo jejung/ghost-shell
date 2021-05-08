@@ -35,10 +35,11 @@ void gs_command_line_free(gs_command_line_t* cmd)
 void gs_command_line_set_argv(gs_command_line_t* cmd, int argc, gs_charp_list_t* argv)
 {
     cmd->argc = argc;
-    cmd->argv = malloc(sizeof(char*) * argc);
+    cmd->argv = malloc(sizeof(char*) * (argc + 1));
     for (int i = 0; i < argc; i++)
     {
         cmd->argv[i] = argv->data;
         argv = argv->next;
     }
+    cmd->argv[argc] = NULL;
 }

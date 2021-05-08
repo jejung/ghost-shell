@@ -74,6 +74,7 @@ void TestAcceptanceParseShouldIdentifyProgram(CuTest* tc)
     CuAssertStrEquals_Msg(tc, "Check program name is correctly set", "program", cmd->argv[0]);
     CuAssertStrEquals_Msg(tc, "Check first arg is correctly set", "first-arg", cmd->argv[1]);
     CuAssertStrEquals_Msg(tc, "Check second arg is correctly set", "second-arg", cmd->argv[2]);
+    CuAssertPtrEquals_Msg(tc, "Check an additional entry is set as null on argv to close it", NULL, cmd->argv[3]);
     gs_command_line_clear(cmd);
 
     gs_command_line_free(cmd);

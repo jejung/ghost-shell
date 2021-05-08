@@ -3,15 +3,24 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "ghostshstrings.h"
 
 #define GS_OPT_SELFCHECK 0x01
 #define GS_OPT_DEBUG 0x02
 
+#define ERR_CREATING_PROCESS 1
+#define GS_ERR_MAX_PIDS 2
+#define GS_ERR_MAX_PIPES 3
+#define GS_ERR_UNEXPECTED 4
+
 #define gs_check_opt(options, opt) (options->flags & opt)
 #define gs_debug_log(options, ...) \
     if (gs_check_opt(options, GS_OPT_DEBUG)) \
     { printf(__VA_ARGS__); printf("\n"); };
+
+#define gs_panic(error, ...) \
+    do { printf(__VA_ARGS__); printf("\n"); exit(error);} while (0);
 
 typedef struct {
     unsigned int flags;

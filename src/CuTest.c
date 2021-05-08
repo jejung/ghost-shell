@@ -370,7 +370,6 @@ void CuSuiteDetails(CuSuite* testSuite, CuString* details)
     }
 }
 
-
 void CuSuiteExportJunitXml(CuSuite* suite, CuString* to)
 {
     CuStringAppendFormat(to, "<testsuite tests=\"%d\">", suite->count);

@@ -3,8 +3,8 @@ WARNINGS :=	-Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 					-Wno-long-long -Wuninitialized
 
 CC=gcc
-override CFLAGS=-c -std=gnu17 -MMD -MP
-override LDFLAGS=
+CFLAGS +=-c -std=gnu17 -MMD -MP
+LDFLAGS +=
 PROJDIRS=src/
 BINBASEDIR=build
 BINDIRS=$(patsubst %,$(BINBASEDIR)/%,$(PROJDIRS))

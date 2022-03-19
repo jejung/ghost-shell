@@ -56,7 +56,9 @@ void CuStringDelete(CuString *str)
 
 void CuStringResize(CuString* str, int newSize)
 {
-    str->buffer = (char*) realloc(str->buffer, sizeof(char) * newSize);
+    char* new = (char*) realloc(str->buffer, sizeof(char) * newSize);
+    free(str->buffer);
+    str->buffer = new;
     str->size = newSize;
 }
 

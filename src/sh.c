@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <errno.h>
-#include <sys/types.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -172,7 +171,8 @@ void TestPipeSupport(CuTest* tc)
     fputs("echo \"there are 5 words here\" | wc -w\n", mockin);
     rewind(mockin);
     _gs_run_for_fds(opt, mockin, mockout);
-    CuAssertFileContents_Msg(tc, "Check wc is executed with the correct arguments and inputs", ">> 5\n>> ", mockout);
+
+    CuAssertFilePattern_Msg(tc, "Check wc is executed with the correct arguments and inputs", ">> %s\n>> ", "5", mockout);
 
     gs_options_free(opt);
 

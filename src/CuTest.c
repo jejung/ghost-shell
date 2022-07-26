@@ -387,3 +387,23 @@ void CuSuiteExportJunitXml(CuSuite* suite, CuString* to)
     }
     CuStringAppend(to, "</testsuite>");
 }
+
+
+void CuAssertFilePattern_LineMsg(CuTest* tc,
+                                const char* file, int line,
+                                const char* message,
+                                const char* pattern, const char* expected, FILE* actual)
+{
+    fseek(actual, 0, SEEK_END);
+    const long int size = ftell(actual);
+    if (size >= 254) {
+        CuFail(tc, "File is too big for such assertion, aborting.");
+        return;
+    }
+
+    char result[255];
+    rewind(actual);
+    fscanf(actual, pattern, &result[0]);
+
+    CuAssertStrEquals_LineMsg(tc, file, line, message, expected, &result[0]);
+}

@@ -77,6 +77,10 @@ void CuAssertPtrEquals_LineMsg(CuTest* tc,
 void CuAssertFileContents_LineMsg(CuTest* tc,
     const char* file, int line, const char* message,
     const char* expected, FILE* actual);
+void CuAssertFilePattern_LineMsg(CuTest* tc,
+                                 const char* file, int line,
+                                 const char* message,
+                                 const char* pattern, const char* expected, FILE* actual);
 
 /* public assert functions */
 
@@ -94,6 +98,8 @@ void CuAssertFileContents_LineMsg(CuTest* tc,
 #define CuAssertPtrEquals_Msg(tc,ms,ex,ac)    CuAssertPtrEquals_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac))
 #define CuAssertFileContents(tc,ex,ac)        CuAssertFileContents_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac))
 #define CuAssertFileContents_Msg(tc,ms,ex,ac) CuAssertFileContents_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac))
+#define CuAssertFilePattern(tc,ptr,ex,ac)     CuAssertFilePattern_LineMsg((tc),__FILE__,__LINE__,NULL,(ptr),(ex),(ac));
+#define CuAssertFilePattern_Msg(tc,ms,ptr,ex,ac) CuAssertFilePattern_LineMsg((tc),__FILE__,__LINE__,(ms),(ptr),(ex),(ac));
 
 #define CuAssertPtrNotNull(tc,p)        CuAssert_Line((tc),__FILE__,__LINE__,"null pointer unexpected",(p != NULL))
 #define CuAssertPtrNotNullMsg(tc,msg,p) CuAssert_Line((tc),__FILE__,__LINE__,(msg),(p != NULL))

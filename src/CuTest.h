@@ -4,10 +4,11 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include "ghostsh.h"
 
 #define CUTEST_VERSION  "CuTest 1.5"
 
-int RunAllTests(char* exportJunitFormat);
+int RunAllTests(gs_options_t* opt);
 
 /* CuString */
 
@@ -116,6 +117,7 @@ typedef struct
     CuTest* list[MAX_TEST_CASES];
     int failCount;
     int assertions;
+    gs_options_t* opt;
 } CuSuite;
 
 

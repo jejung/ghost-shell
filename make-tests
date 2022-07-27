@@ -13,6 +13,7 @@ echo '
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ghostsh.h"
 #include "CuTest.h"
 '
 
@@ -23,10 +24,11 @@ cat $FILES | grep '^void Test' |
 
 echo \
 '
-int RunAllTests(char* exportJunitFormat)
+int RunAllTests(gs_options_t* opt)
 {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
+    suite->opt = opt;
 '
 cat $FILES | grep '^void Test' | 
     sed -e 's/^void //' \
@@ -39,11 +41,11 @@ echo \
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);
     CuSuiteDetails(suite, output);
-    if (exportJunitFormat != NULL)
+    if (opt->selfcheck_export_path != NULL)
     {
       CuString *export = CuStringNew();
       CuSuiteExportJunitXml(suite, export);
-      FILE *fp = fopen(exportJunitFormat, "w+");
+      FILE *fp = fopen(opt->selfcheck_export_path, "w+");
       fwrite(export->buffer, export->length, 1, fp);
       fclose(fp);
       CuStringDelete(export);

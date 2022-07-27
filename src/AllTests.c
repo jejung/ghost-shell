@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ghostsh.h"
 #include "CuTest.h"
 
 extern void TestAcceptanceParseOptions(CuTest*);
@@ -11,10 +12,11 @@ extern void TestAcceptancePipesShouldCreateCmdLineTree(CuTest*);
 extern void TestAcceptanceShRunCorrectly(CuTest*);
 extern void TestPipeSupport(CuTest*);
 
-int RunAllTests(char* exportJunitFormat)
+int RunAllTests(gs_options_t* opt)
 {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
+    suite->opt = opt;
 
     SUITE_ADD_TEST(suite, TestAcceptanceParseOptions);
     SUITE_ADD_TEST(suite, TestAcceptanceParseShouldIdentifyProgram);
@@ -25,11 +27,11 @@ int RunAllTests(char* exportJunitFormat)
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);
     CuSuiteDetails(suite, output);
-    if (exportJunitFormat != NULL)
+    if (opt->selfcheck_export_path != NULL)
     {
       CuString *export = CuStringNew();
       CuSuiteExportJunitXml(suite, export);
-      FILE *fp = fopen(exportJunitFormat, "w+");
+      FILE *fp = fopen(opt->selfcheck_export_path, "w+");
       fwrite(export->buffer, export->length, 1, fp);
       fclose(fp);
       CuStringDelete(export);

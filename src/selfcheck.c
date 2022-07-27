@@ -7,6 +7,6 @@ void gs_run_selfcheck(gs_options_t *opt)
 {
     printf("Self-check in progress\n");
 
-    int failures = RunAllTests(opt->selfcheck_export_path);
+    int failures = RunAllTests(opt);
     exit(failures);
 }

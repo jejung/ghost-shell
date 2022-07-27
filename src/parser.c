@@ -3,40 +3,69 @@
 #include <string.h>
 #include "ghostsh.h"
 #include "ghostshparser.h"
-#include "ghostshstrings.h"
 #include "CuTest.h"
 
-void gs_parse_line(char* buf, gs_command_line_t* cmd)
+gs_parse_result_t gs_parse_line(char* buf, gs_command_line_t* cmd)
 {
-    char* end_pipes;
-    char* pipes = strtok_r(buf, "|", &end_pipes);
+    char* parameter = buf;
+    char c;
+    gs_parse_result_t result;
 
-    while (pipes != NULL) {
-        char* end_token;
-        char* token = strtok_r(pipes, " \t", &end_token);
+    result.status = GS_PARSE_SUCCESS;
+    result.msg = NULL;
 
-        gs_charp_list_t* argv = gs_charp_list_new();
-        gs_charp_list_t* argvtail = argv;
+    while ((c = *buf) != '\0') {
+        switch (c) {
+            case ' ':
+            case '\t':
+            case '|':
+                *buf = '\0';
+                // means parameter is not an empty string, handles consecutive separators.
+                if (parameter < buf)
+                {
+                    gs_command_line_add_argv(cmd, parameter);
+                }
 
-        int argc = 0;
-        while (token != NULL) {
-            argvtail = gs_charp_list_append(argvtail, token);
-            argc++;
-            token = strtok_r(NULL, " \t", &end_token);
+                buf++;
+                parameter = buf;
+
+                if (c == '|')
+                {
+                    if (cmd->argc == 0)
+                    {
+                        result.status = GS_PARSE_INVALID_SYNTAX;
+                        result.msg = "Invalid syntax near: \"|\"";
+                        return result;
+                    }
+                    cmd->pipe_to = gs_command_line_new();
+                    result = gs_parse_line(buf, cmd->pipe_to);
+                    if (result.status == GS_PARSE_EMPTY_LINE)
+                    {
+                        result.status = GS_PARSE_INVALID_SYNTAX;
+                        result.msg = "Invalid syntax near: \"|\"";
+                        return result;
+                    }
+                    return result;
+                }
+                break;
+            default:
+                buf++;
+                break;
         }
-
-        gs_command_line_set_argv(cmd, argc, argv);
-        gs_charp_list_free(argv);
-
-        pipes = strtok_r(NULL, "|", &end_pipes);
-        if (pipes == NULL)
-        {
-            break;
-        }
-
-        cmd->pipe_to = gs_command_line_new();
-        cmd = cmd->pipe_to;
     }
+
+    if (parameter < buf)
+    {
+        gs_command_line_add_argv(cmd, parameter);
+    }
+
+    if (cmd->argc == 0)
+    {
+        result.status = GS_PARSE_EMPTY_LINE;
+        return result;
+    }
+
+    return result;
 }
 
 

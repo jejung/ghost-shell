@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ghostshstrings.h"
 
 #define GS_OPT_SELFCHECK 0x01
 #define GS_OPT_DEBUG 0x02
@@ -37,8 +36,6 @@ void gs_run_selfcheck(gs_options_t* opt);
 
 int gs_run_interactively(gs_options_t* opt);
 
-#define gs_CMD_INFO_BLANK 1
-
 typedef struct gs_command_line {
     int argc;
     char **argv;
@@ -50,7 +47,7 @@ typedef struct gs_command_line {
 gs_command_line_t* gs_command_line_new(void);
 void gs_command_line_free(gs_command_line_t* cmd);
 void gs_command_line_clear(gs_command_line_t* cmd);
-void gs_command_line_set_argv(gs_command_line_t* cmd, int argc, gs_charp_list_t* argv);
+void gs_command_line_add_argv(gs_command_line_t* cmd, char* argv);
 
 
 #define GS_MAX_RUNNING_PIDS 25

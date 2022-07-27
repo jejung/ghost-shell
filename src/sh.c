@@ -98,21 +98,26 @@ int _gs_run_for_fds(gs_options_t* opt, FILE* in, FILE* out)
     gs_command_line_t* cmd = gs_command_line_new();
     gs_context_t* ctx = gs_context_new();
     ctx->options = opt;
+    gs_parse_result_t result;
 
     while (1)
     {
         fprintf(out,"%s ", opt->prompt);
         fflush(out);
-        if (fgets(line, 4095, in) == NULL)
+        if (fgets(line, sizeof(line) - 1, in) == NULL)
         {
             break;
         }
         line[strlen(line) - 1] = '\0';
 
-        gs_parse_line(line, cmd);
+        result = gs_parse_line(line, cmd);
 
-        if (cmd->argc == 0)
+        if (result.status != GS_PARSE_SUCCESS)
         {
+            if (result.msg != NULL)
+            {
+                fprintf(out, "%s\n", result.msg);
+            }
             gs_command_line_clear(cmd);
             continue;
         }
@@ -168,10 +173,25 @@ void TestPipeSupport(CuTest* tc)
     FILE* mockin = tmpfile();
     FILE* mockout = tmpfile();
 
+    rewind(mockin);
+    fputs("|\n", mockin);
+    rewind(mockin);
+    rewind(mockout);
+    _gs_run_for_fds(opt, mockin, mockout);
+    CuAssertFileContents_Msg(tc, "Check invalid pipe usage is reported", ">> Invalid syntax near: \"|\"\n>> ", mockout);
+
+    rewind(mockin);
+    fputs("program |\n", mockin);
+    rewind(mockin);
+    rewind(mockout);
+    _gs_run_for_fds(opt, mockin, mockout);
+    CuAssertFileContents_Msg(tc, "Check invalid pipe usage missing program on the end", ">> Invalid syntax near: \"|\"\n>> ", mockout);
+
+    rewind(mockin);
     fputs("echo \"there are 5 words here\" | wc -w\n", mockin);
     rewind(mockin);
+    rewind(mockout);
     _gs_run_for_fds(opt, mockin, mockout);
-
     CuAssertFilePattern_Msg(tc, "Check wc is executed with the correct arguments and inputs", ">> %s\n>> ", "5", mockout);
 
     gs_options_free(opt);

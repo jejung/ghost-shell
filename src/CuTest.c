@@ -56,9 +56,11 @@ void CuStringDelete(CuString *str)
 
 void CuStringResize(CuString* str, int newSize)
 {
-    char* new = (char*) realloc(str->buffer, sizeof(char) * newSize);
-    free(str->buffer);
-    str->buffer = new;
+# ifdef __MACH__
+    str->buffer = (char*) reallocf(str->buffer, sizeof(char) * newSize);
+# else
+    str->buffer = (char*) realloc(str->buffer, sizeof(char) * newSize);
+# endif
     str->size = newSize;
 }
 
@@ -262,6 +264,28 @@ void CuAssertFileContents_LineMsg(
     fseek(actual, pos, SEEK_SET);
 }
 
+void CuAssertFilePattern_LineMsg(CuTest* tc,
+                                 const char* file, int line,
+                                 const char* message,
+                                 const char* pattern, const char* expected, FILE* actual)
+{
+    const long int pos = ftell(actual);
+    fseek(actual, 0, SEEK_END);
+    const long int size = ftell(actual);
+    if (size >= 254) {
+        CuFail(tc, "File is too big for such assertion, aborting.");
+        return;
+    }
+
+    char result[255];
+    rewind(actual);
+    fscanf(actual, pattern, &result[0]);
+
+    CuAssertStrEquals_LineMsg(tc, file, line, message, expected, &result[0]);
+
+    fseek(actual, pos, SEEK_SET);
+}
+
 /*-------------------------------------------------------------------------*
  * CuSuite
  *-------------------------------------------------------------------------*/
@@ -314,14 +338,24 @@ void CuSuiteAddSuite(CuSuite* testSuite, CuSuite* testSuite2)
 
 void CuSuiteRun(CuSuite* testSuite)
 {
+    gs_debug_log(testSuite->opt, "");
     int i;
     for (i = 0 ; i < testSuite->count ; ++i)
     {
         CuTest* testCase = testSuite->list[i];
+        gs_debug_log(testSuite->opt, "%s", testCase->name);
         CuTestRun(testCase);
+        if (testCase->failed)
+        {
+            gs_debug_log(testSuite->opt, "[X]");
+        } else
+        {
+            gs_debug_log(testSuite->opt, "[✔]");
+        }
         if (testCase->failed) { testSuite->failCount += 1; }
         testSuite->assertions += testCase->assertions;
     }
+    gs_debug_log(testSuite->opt, "");
 }
 
 void CuSuiteSummary(CuSuite* testSuite, CuString* summary)
@@ -386,24 +420,4 @@ void CuSuiteExportJunitXml(CuSuite* suite, CuString* to)
         CuStringAppend(to, "</testcase>");
     }
     CuStringAppend(to, "</testsuite>");
-}
-
-
-void CuAssertFilePattern_LineMsg(CuTest* tc,
-                                const char* file, int line,
-                                const char* message,
-                                const char* pattern, const char* expected, FILE* actual)
-{
-    fseek(actual, 0, SEEK_END);
-    const long int size = ftell(actual);
-    if (size >= 254) {
-        CuFail(tc, "File is too big for such assertion, aborting.");
-        return;
-    }
-
-    char result[255];
-    rewind(actual);
-    fscanf(actual, pattern, &result[0]);
-
-    CuAssertStrEquals_LineMsg(tc, file, line, message, expected, &result[0]);
 }

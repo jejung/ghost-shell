@@ -32,13 +32,19 @@ void gs_command_line_free(gs_command_line_t* cmd)
     free(cmd);
 }
 
-void gs_command_line_set_argv(gs_command_line_t* cmd, int argc, gs_charp_list_t* argv)
+void gs_command_line_add_argv(gs_command_line_t* cmd, char* argv)
 {
-    cmd->argc = argc;
-    cmd->argv = malloc(sizeof(char*) * (argc + 1));
-    for (int i = 0; i < argc; i++, argv = argv->next)
+    if (cmd->argc == 0)
     {
-        cmd->argv[i] = argv->data;
+        cmd->argv = (char**) malloc(sizeof(char*) * 2);
+    } else
+    {
+#ifdef __MACH__
+        cmd->argv = (char**) reallocf(cmd->argv, sizeof(char*) * (cmd->argc + 2));
+#else
+        cmd->argv = (char**) realloc(cmd->argv, sizeof(char*) * (cmd->argc + 2));
+#endif
     }
-    cmd->argv[argc] = NULL;
+    cmd->argv[cmd->argc] = argv;
+    cmd->argv[++cmd->argc] = NULL;
 }

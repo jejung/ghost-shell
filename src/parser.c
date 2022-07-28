@@ -22,7 +22,7 @@ gs_parse_result_t gs_parse_line(char* buf, gs_command_line_t* cmd)
                 if (parameter < buf)
                 {
                     result.status = GS_PARSE_INVALID_SYNTAX;
-                    result.msg = "Invalid syntax near: '\"'";
+                    result.msg = "Invalid syntax near: \"\"\"";
                     return result;
                 }
                 *buf = '\0';
@@ -93,7 +93,6 @@ gs_parse_result_t gs_parse_line(char* buf, gs_command_line_t* cmd)
     return result;
 }
 
-
 void TestAcceptanceParseShouldIdentifyProgram(CuTest* tc)
 {
     char* buf = malloc(sizeof(char) * 500);
@@ -160,7 +159,6 @@ void TestAcceptancePipesShouldCreateCmdLineTree(CuTest* tc)
     gs_command_line_free(cmd);
     free(buf);
 }
-
 
 void TestAcceptanceQuotesShouldWorkForGroupingParameters(CuTest* tc)
 {

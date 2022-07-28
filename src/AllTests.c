@@ -9,6 +9,7 @@
 extern void TestAcceptanceParseOptions(CuTest*);
 extern void TestAcceptanceParseShouldIdentifyProgram(CuTest*);
 extern void TestAcceptancePipesShouldCreateCmdLineTree(CuTest*);
+extern void TestAcceptanceQuotesShouldWorkForGroupingParameters(CuTest*);
 extern void TestAcceptanceShRunCorrectly(CuTest*);
 extern void TestPipeSupport(CuTest*);
 
@@ -21,6 +22,7 @@ int RunAllTests(gs_options_t* opt)
     SUITE_ADD_TEST(suite, TestAcceptanceParseOptions);
     SUITE_ADD_TEST(suite, TestAcceptanceParseShouldIdentifyProgram);
     SUITE_ADD_TEST(suite, TestAcceptancePipesShouldCreateCmdLineTree);
+    SUITE_ADD_TEST(suite, TestAcceptanceQuotesShouldWorkForGroupingParameters);
     SUITE_ADD_TEST(suite, TestAcceptanceShRunCorrectly);
     SUITE_ADD_TEST(suite, TestPipeSupport);
 

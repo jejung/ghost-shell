@@ -16,6 +16,31 @@ gs_parse_result_t gs_parse_line(char* buf, gs_command_line_t* cmd)
 
     while ((c = *buf) != '\0') {
         switch (c) {
+            case '"':
+            case '\'':
+                // means we are not at the beginning of a new parameter
+                if (parameter < buf)
+                {
+                    result.status = GS_PARSE_INVALID_SYNTAX;
+                    result.msg = "Invalid syntax near: '\"'";
+                    return result;
+                }
+                *buf = '\0';
+                parameter++;
+                do {
+                    buf++;
+                } while ((*buf) != c && (*buf) != '\0');
+                if ((*buf) == c)
+                {
+                    *buf = '\0';
+                    buf++;
+                } else
+                {
+                    result.status = GS_PARSE_INVALID_SYNTAX;
+                    result.msg = "Invalid syntax: quote was not closed";
+                    return result;
+                }
+                break;
             case ' ':
             case '\t':
             case '|':
@@ -131,6 +156,41 @@ void TestAcceptancePipesShouldCreateCmdLineTree(CuTest* tc)
     CuAssertStrEquals_Msg(tc, "Check arguments are correctly set to leaf", "arg2", cmd->pipe_to->argv[1]);
     CuAssertStrEquals_Msg(tc, "Check arguments are correctly set to leaf", "--opt2", cmd->pipe_to->argv[2]);
     gs_command_line_clear(cmd);
+
+    gs_command_line_free(cmd);
+    free(buf);
+}
+
+
+void TestAcceptanceQuotesShouldWorkForGroupingParameters(CuTest* tc)
+{
+    char *buf = malloc(sizeof(char) * 500);
+    gs_command_line_t *cmd = gs_command_line_new();
+
+    strcpy(buf, "program \"this is a single argument\"");
+    gs_parse_line(buf, cmd);
+    CuAssertIntEquals_Msg(tc, "Check words were group in a single parameter", 2, cmd->argc);
+    CuAssertStrEquals_Msg(tc, "Check quotes were skipped in final value", "this is a single argument", cmd->argv[1]);
+
+    gs_command_line_clear(cmd);
+    strcpy(buf, "program \"this is a single argument with | inside\"");
+    gs_parse_line(buf, cmd);
+    CuAssertIntEquals_Msg(tc, "Check special characters were ignored inside quotes", 2, cmd->argc);
+    CuAssertStrEquals_Msg(tc, "Check nothing other than quotes were skipped", "this is a single argument with | inside", cmd->argv[1]);
+
+    gs_command_line_clear(cmd);
+    strcpy(buf, "program \"this is the first parameter\" 'this is the second'");
+    gs_parse_line(buf, cmd);
+    CuAssertIntEquals_Msg(tc, "Check either single or double quotes can be used", 3, cmd->argc);
+    CuAssertStrEquals_Msg(tc, "Check single quotes are also removed", "this is the first parameter", cmd->argv[1]);
+    CuAssertStrEquals_Msg(tc, "Check single quotes are also removed", "this is the second", cmd->argv[2]);
+
+    gs_command_line_clear(cmd);
+    strcpy(buf, "program \"this is the first parameter\" \"this is the second\"");
+    gs_parse_line(buf, cmd);
+    CuAssertIntEquals_Msg(tc, "Check the same quote can be reused", 3, cmd->argc);
+    CuAssertStrEquals_Msg(tc, "Check single quotes are also removed", "this is the first parameter", cmd->argv[1]);
+    CuAssertStrEquals_Msg(tc, "Check single quotes are also removed", "this is the second", cmd->argv[2]);
 
     gs_command_line_free(cmd);
     free(buf);

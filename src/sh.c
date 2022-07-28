@@ -138,64 +138,65 @@ int gs_run_interactively(gs_options_t* opt)
     return _gs_run_for_fds(opt, stdin, stdout);
 }
 
+#define PREPARE_TEST(pmpt) \
+    gs_options_t* opt = gs_options_new(); \
+    opt->prompt = (pmpt); \
+    FILE* mockin = tmpfile(); \
+    FILE* mockout = tmpfile();
+
+#define TEST_SCENARIO(input) \
+    ftruncate(fileno(mockin), 0); \
+    ftruncate(fileno(mockout), 0);  \
+    rewind(mockin); \
+    rewind(mockout); \
+    fputs((input), mockin); \
+    fputs("\n", mockin); \
+    rewind(mockin); \
+    _gs_run_for_fds(opt, mockin, mockout);
+
+#define END_TEST() \
+    gs_options_free(opt); \
+    fclose(mockin); \
+    fclose(mockout);
 
 void TestAcceptanceShRunCorrectly(CuTest* tc)
 {
-    gs_options_t* opt = gs_options_new();
-    opt->prompt = "|";
+    PREPARE_TEST("|");
 
-    FILE* mockin = tmpfile();
-    FILE* mockout = tmpfile();
-
-    fputs("\n", mockin);
-    rewind(mockin);
-    _gs_run_for_fds(opt, mockin, mockout);
+    TEST_SCENARIO("")
     CuAssertFileContents_Msg(tc, "Check empty line produces one prompt and then exits", "| | ", mockout);
 
-    rewind(mockin);
-    fputs("echo baaa\n", mockin);
-    rewind(mockin);
-    rewind(mockout);
-    _gs_run_for_fds(opt, mockin, mockout);
+    TEST_SCENARIO("echo baaa")
     CuAssertFileContents_Msg(tc, "Check is able to execute child program", "| baaa\n| ", mockout);
 
-    gs_options_free(opt);
-
-    fclose(mockin);
-    fclose(mockout);
+    END_TEST();
 }
 
 void TestPipeSupport(CuTest* tc)
 {
-    gs_options_t* opt = gs_options_new();
-    opt->prompt = ">>";
+    PREPARE_TEST(">>");
 
-    FILE* mockin = tmpfile();
-    FILE* mockout = tmpfile();
-
-    rewind(mockin);
-    fputs("|\n", mockin);
-    rewind(mockin);
-    rewind(mockout);
-    _gs_run_for_fds(opt, mockin, mockout);
+    TEST_SCENARIO("|");
     CuAssertFileContents_Msg(tc, "Check invalid pipe usage is reported", ">> Invalid syntax near: \"|\"\n>> ", mockout);
 
-    rewind(mockin);
-    fputs("program |\n", mockin);
-    rewind(mockin);
-    rewind(mockout);
-    _gs_run_for_fds(opt, mockin, mockout);
+    TEST_SCENARIO("program |");
     CuAssertFileContents_Msg(tc, "Check invalid pipe usage missing program on the end", ">> Invalid syntax near: \"|\"\n>> ", mockout);
 
-    rewind(mockin);
-    fputs("echo \"there are 5 words here\" | wc -w\n", mockin);
-    rewind(mockin);
-    rewind(mockout);
-    _gs_run_for_fds(opt, mockin, mockout);
+    TEST_SCENARIO("echo \"there are 5 words here\" | wc -w");
     CuAssertFilePattern_Msg(tc, "Check wc is executed with the correct arguments and inputs", ">> %s\n>> ", "5", mockout);
 
-    gs_options_free(opt);
+    END_TEST();
+}
 
-    fclose(mockin);
-    fclose(mockout);
+void TestEscapedInputSupport(CuTest* tc)
+{
+    PREPARE_TEST(">>");
+
+    TEST_SCENARIO("echo abc\"ac\"");
+    CuAssertFileContents_Msg(tc, "Check unclosed quote is identified", ">> Invalid syntax near: \"\"\"\n>> ", mockout);
+
+    TEST_SCENARIO("echo \"");
+    CuAssertFileContents_Msg(tc, "Check unclosed quote is identified", ">> Invalid syntax: quote was not closed\n>> ", mockout);
+
+    END_TEST();
 }

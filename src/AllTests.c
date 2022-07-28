@@ -12,6 +12,7 @@ extern void TestAcceptancePipesShouldCreateCmdLineTree(CuTest*);
 extern void TestAcceptanceQuotesShouldWorkForGroupingParameters(CuTest*);
 extern void TestAcceptanceShRunCorrectly(CuTest*);
 extern void TestPipeSupport(CuTest*);
+extern void TestEscapedInputSupport(CuTest*);
 
 int RunAllTests(gs_options_t* opt)
 {
@@ -25,6 +26,7 @@ int RunAllTests(gs_options_t* opt)
     SUITE_ADD_TEST(suite, TestAcceptanceQuotesShouldWorkForGroupingParameters);
     SUITE_ADD_TEST(suite, TestAcceptanceShRunCorrectly);
     SUITE_ADD_TEST(suite, TestPipeSupport);
+    SUITE_ADD_TEST(suite, TestEscapedInputSupport);
 
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);
